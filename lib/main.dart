@@ -74,7 +74,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
         padding: EdgeInsets.only(bottom: _questionBottomPadding),
         alignment: Alignment.center,
         child: Text(
-        "yo yo",
+        "travel around the world",
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: _fontSize,
@@ -94,10 +94,6 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
     var scrollNotification = NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
         var metrics = notification.metrics;
-        //print(metrics.extentBefore);
-        //print(metrics.viewportDimension);
-        //print(metrics.extentBefore);
-        //print(metrics.extentInside);
         setState(() {
           _questionBottomPadding = metrics.extentBefore;
         });
@@ -108,7 +104,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
     var card = Column(
       children: [
         Expanded(
-          child: question,
+          child: Container()
         ),
         Expanded(
           child: scrollNotification,
