@@ -27,6 +27,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
   var _dragStartOffset;
 
   var _fontSize = 48.0;
+  var _padding = 0.0;
 
   initState() {
     super.initState();
@@ -36,7 +37,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Widget question = Container(
-        padding:  EdgeInsets.only(bottom: 32.0),
+        padding:  EdgeInsets.only(bottom: _padding),
         child: Center (
             child: Text(
               "travel around the world",
@@ -50,7 +51,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
     );
 
     Widget answer = Container(
-        padding:  EdgeInsets.only(top: 32.0),
+        padding:  EdgeInsets.only(top: _padding),
         child: Text(
           "wàan jàu sâi gâai 環遊世界",
           style: TextStyle(
@@ -81,66 +82,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
       ]
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('AnkiReview'),
-      ),
-      body:  Container(
-          child:card
-      ),
-    );
-
-    /*
-    var child = GestureDetector(
-        onTap: () {
-            controller.reset();
-        },
-        onVerticalDragUpdate: (data) {
-          // print(data);
-          var currentOffset = data.globalPosition;
-          var travel = _dragStartOffset - currentOffset;
-          // print(travel);
-
-          if(travel.dy <0 )
-          {
-            return;
-          }
-
-          // cannot be lower than zero
-          var travelY = max<double>(0.0, travel.dy);
-          // cannot be higher than 100
-          travelY = min<double>(200.0, travelY);
-
-          var animationPosition = travelY / 200.0;
-          controller.value = animationPosition;
-        },
-        onVerticalDragEnd: (data) {
-          if(controller.value > 0.50) {
-            // make the animation continue on its own
-            controller.forward();
-          } else {
-            // go back the other way
-            controller.reverse();
-          }
-        },
-        onVerticalDragStart: (data) {
-          //print(data);
-          _dragStartOffset = data.globalPosition;
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('AnkiReview'),
-          ),
-          body:  Container(
-              child:Column(
-                children: children,
-              )
-          ),
-        )
-
-    );
-    */
-
+    return card;
 
   }
 }
@@ -151,7 +93,14 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Flutter Demo',
-      home: Card(),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('AnkiReview'),
+        ),
+        body:  Container(
+            child:Card()
+        ),
+      ),
     );
   }
 }
