@@ -26,46 +26,23 @@ class Card extends StatefulWidget {
 class CardState extends State<Card> with SingleTickerProviderStateMixin {
   var _dragStartOffset;
 
-  Animation<double> questionAnimation;
-  Animation<double> answerAnimation;
-  Animation<double> opacityAnimation;
-  AnimationController controller;
+  var _fontSize = 48.0;
 
   initState() {
     super.initState();
-    controller = AnimationController(duration: const Duration(milliseconds: 250), vsync: this);
-    questionAnimation = Tween(begin: 250.0, end: 150.0).animate(controller)
-      ..addListener(() {
-        setState(() {
-          // the state that has changed here is the animation object’s value
-        });
-      });
-    answerAnimation = Tween(begin: 200.0, end: 32.0).animate(controller)
-      ..addListener(() {
-        setState(() {
-          // the state that has changed here is the animation object’s value
-        });
-      });
-    opacityAnimation = Tween(begin: 0.0, end: 1.0).animate(controller)
-      ..addListener(() {
-        setState(() {
-          // the state that has changed here is the animation object’s value
-        });
-      });
-
   }
 
 
   @override
   Widget build(BuildContext context) {
     Widget question = Container(
-        padding:  EdgeInsets.only(top: questionAnimation.value),
+        padding:  EdgeInsets.only(bottom: 32.0),
         child: Center (
             child: Text(
               "travel around the world",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 48.0,
+                fontSize: _fontSize,
               ),
               textAlign: TextAlign.center,
             )
@@ -73,22 +50,47 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
     );
 
     Widget answer = Container(
-        padding:  EdgeInsets.only(top: answerAnimation.value),
-        child: Opacity(
-          opacity: opacityAnimation.value,
-          child: Text(
-              "wàan jàu sâi gâai 環遊世界",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 48.0,
-              ),
-              textAlign: TextAlign.center,
-            )
-        )
+        padding:  EdgeInsets.only(top: 32.0),
+        child: Text(
+          "wàan jàu sâi gâai 環遊世界",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: _fontSize,
+          ),
+          textAlign: TextAlign.center
+      )
+
     );
 
     var children = [question, answer];
 
+    var card = Column(
+      children: [
+        Expanded(
+          child: question,
+        ),
+        Expanded(
+          child: PageView(
+          scrollDirection: Axis.vertical,
+            children: [
+              Container(),
+              answer
+            ]
+          )
+        )
+      ]
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('AnkiReview'),
+      ),
+      body:  Container(
+          child:card
+      ),
+    );
+
+    /*
     var child = GestureDetector(
         onTap: () {
             controller.reset();
@@ -122,7 +124,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
           }
         },
         onVerticalDragStart: (data) {
-          print(data);
+          //print(data);
           _dragStartOffset = data.globalPosition;
         },
         child: Scaffold(
@@ -137,10 +139,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
         )
 
     );
-
-
-    return child;
-
+    */
 
 
   }
