@@ -18,69 +18,76 @@ void main() {
  * wàan jàu sâi gâai
  */
 
-class Card extends StatefulWidget {
+class Question extends StatefulWidget {
+  Question({Key key,  this.questionString, this.textSize = 55.0, this.revealAnswerAnimationController}) : super(key: key);
+
+  final String questionString;
+  final double textSize;
+  final AnimationController revealAnswerAnimationController;
+
   @override
-  createState() => CardState();
+  createState() => QuestionState();
 }
 
-class CardState extends State<Card> with SingleTickerProviderStateMixin {
-  var _dragStartOffset;
-
-  var _fontSize = 48.0;
-  static const _padding = 28.0;
-  var _questionBottomPadding = 0.0;
+class QuestionState extends State<Question> with SingleTickerProviderStateMixin {
+  Animation<double> animation;
 
   initState() {
     super.initState();
+    animation = Tween(begin: 32.0, end: 300.0).animate(widget.revealAnswerAnimationController)
+      ..addListener(() {
+        setState(() {
+          // the state that has changed here is the animation object’s value
+        });
+      });
   }
-
 
   @override
   Widget build(BuildContext context) {
-
-    var questionText = Text(
-      "travel around the world",
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: _fontSize,
-      ),
-      textAlign: TextAlign.center,
+    return Container(
+        padding: EdgeInsets.only(bottom: animation.value),
+        alignment: Alignment.center,
+        child: Text(
+          widget.questionString,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: widget.textSize,
+          ),
+          textAlign: TextAlign.center,
+        )
     );
+  }
+}
 
+class Answer extends StatefulWidget {
+  Answer({Key key, this.answerString, this.textSize = 55.0, this.revealAnswerAnimationController}) : super(key: key);
+
+  final String answerString;
+  final double textSize;
+  final AnimationController revealAnswerAnimationController;
+
+  @override
+  createState() => AnswerState();
+}
+
+class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) {
     var answerText = Text(
-        "wàan jàu sâi gâai 環遊世界",
+        widget.answerString,
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: _fontSize,
+          fontSize: widget.textSize,
         ),
         textAlign: TextAlign.center
     );
 
 
-    Widget question = Container(
-            padding: EdgeInsets.only(bottom: _padding),
-            alignment: Alignment.bottomCenter,
-            child: questionText
-    );
-
     Widget answer = Container(
-        padding:  EdgeInsets.only(top: _padding),
+        padding:  EdgeInsets.only(top: 32.0),
         alignment: Alignment.topCenter,
         child: answerText
 
-    );
-
-    var underneath = Container(
-        padding: EdgeInsets.only(bottom: _questionBottomPadding),
-        alignment: Alignment.center,
-        child: Text(
-        "travel around the world",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: _fontSize,
-        ),
-        textAlign: TextAlign.center,
-      )
     );
 
     var pageView = PageView(
@@ -94,29 +101,70 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
     var scrollNotification = NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
         var metrics = notification.metrics;
+        widget.revealAnswerAnimationController.value = metrics.extentBefore / metrics.viewportDimension.toDouble();
+        /*
         setState(() {
           _questionBottomPadding = metrics.extentBefore;
         });
+        */
       },
       child: pageView,
     );
 
     var card = Column(
-      children: [
-        Expanded(
-          child: Container()
-        ),
-        Expanded(
-          child: scrollNotification,
-        )
-      ]
+        children: [
+          Expanded(
+              child: Container()
+          ),
+          Expanded(
+            child: scrollNotification,
+          )
+        ]
     );
 
+    return card;
+  }
+}
+
+class Card extends StatefulWidget {
+  @override
+  createState() => CardState();
+}
+
+class CardState extends State<Card> with SingleTickerProviderStateMixin {
+
+  //Animation<double> revealAnswerAnimation;
+  AnimationController revealAnswerAnimationController;
+
+  static const  _fontSize = 60.0;
+  static const _padding = 28.0;
+  var _questionBottomPadding = 0.0;
+
+  static const _questionString = "travel around the world";
+  static const _answerString = "wàan jàu sâi gâai 環遊世界";
+
+  initState() {
+    super.initState();
+    revealAnswerAnimationController = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this);
+    // revealAnswerAnimation = Tween(begin: 0.0, end: 300.0).animate(controller);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    var stackBottom = Question(
+        questionString: _questionString,
+        revealAnswerAnimationController: revealAnswerAnimationController,
+    );
+    var stackTop = Answer(
+        answerString: _answerString,
+        revealAnswerAnimationController: revealAnswerAnimationController,
+    );
 
     return Stack(
       children: [
-        underneath,
-        card
+        stackBottom,
+        stackTop
       ]
     );
 
