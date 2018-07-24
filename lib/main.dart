@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'dart:math';
 // Uncomment lines 7 and 10 to view the visual layout at runtime.
 //import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
@@ -122,21 +123,19 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
 }
 
 class Card extends StatefulWidget {
+  Card({Key key, this.questionString, this.answerString}) : super(key: key);
+
+  final String questionString;
+  final String answerString;
+
   @override
   createState() => CardState();
 }
 
 class CardState extends State<Card> with SingleTickerProviderStateMixin {
 
-  //Animation<double> revealAnswerAnimation;
   AnimationController revealAnswerAnimationController;
-
   static const  _fontSize = 65.0;
-  static const _padding = 28.0;
-  var _questionBottomPadding = 0.0;
-
-  static const _questionString = "travel around the world";
-  static const _answerString = "wàan jàu sâi gâai 環遊世界";
 
   initState() {
     super.initState();
@@ -147,12 +146,12 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
 
     var stackBottom = Question(
-        questionString: _questionString,
+        questionString: widget.questionString,
         revealAnswerAnimationController: revealAnswerAnimationController,
         textSize: _fontSize,
     );
     var stackTop = Answer(
-        answerString: _answerString,
+        answerString: widget.answerString,
         revealAnswerAnimationController: revealAnswerAnimationController,
         textSize: _fontSize,
     );
@@ -163,11 +162,53 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
         stackTop
       ]
     );
-
-
-    //return card;
-
   }
+}
+
+class Reviewer extends StatefulWidget {
+  Reviewer({Key key}) : super(key: key);
+
+  @override
+  createState() => ReviewerState();
+}
+
+class ReviewerState extends State<Reviewer> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Image.asset(
+          'images/background_1.jpg',
+          fit: BoxFit.cover,
+          height: 800.0,
+        ),
+        BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
+          child: Container(
+            color: Colors.white.withOpacity(0.5),
+          ),
+        ),
+        PageView(
+        children: [
+          Card(
+            questionString: "travel around the world",
+            answerString: "wàan jàu sâi gâai 環遊世界",
+          ),
+          Card(
+            questionString: "I have to work late",
+            answerString: "ngǒ jîu hóu cì sāu gūng 我要好遲收工",
+          ),
+          Card(
+            questionString: "confident",
+            answerString: "jǎu sêon sām 有信心",
+          )
+        ]
+        )
+      ]
+    );
+  }
+
 }
 
 class MyApp extends StatelessWidget {
@@ -181,7 +222,7 @@ class MyApp extends StatelessWidget {
           title: Text('AnkiReview'),
         ),
         body:  Container(
-            child:Card()
+            child: Reviewer()
         ),
       ),
     );
