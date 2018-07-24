@@ -102,11 +102,6 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
       onNotification: (ScrollNotification notification) {
         var metrics = notification.metrics;
         widget.revealAnswerAnimationController.value = metrics.extentBefore / metrics.viewportDimension.toDouble();
-        /*
-        setState(() {
-          _questionBottomPadding = metrics.extentBefore;
-        });
-        */
       },
       child: pageView,
     );
@@ -136,7 +131,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
   //Animation<double> revealAnswerAnimation;
   AnimationController revealAnswerAnimationController;
 
-  static const  _fontSize = 60.0;
+  static const  _fontSize = 65.0;
   static const _padding = 28.0;
   var _questionBottomPadding = 0.0;
 
@@ -145,8 +140,7 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
 
   initState() {
     super.initState();
-    revealAnswerAnimationController = AnimationController(duration: const Duration(milliseconds: 2000), vsync: this);
-    // revealAnswerAnimation = Tween(begin: 0.0, end: 300.0).animate(controller);
+    revealAnswerAnimationController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
   }
 
   @override
@@ -155,10 +149,12 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
     var stackBottom = Question(
         questionString: _questionString,
         revealAnswerAnimationController: revealAnswerAnimationController,
+        textSize: _fontSize,
     );
     var stackTop = Answer(
         answerString: _answerString,
         revealAnswerAnimationController: revealAnswerAnimationController,
+        textSize: _fontSize,
     );
 
     return Stack(
