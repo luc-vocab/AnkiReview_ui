@@ -33,9 +33,11 @@ class Question extends StatefulWidget {
 class QuestionState extends State<Question> with SingleTickerProviderStateMixin {
   Animation<double> animation;
 
+  static const animationEndPadding = 150.0;
+
   initState() {
     super.initState();
-    animation = Tween(begin: 32.0, end: 300.0).animate(widget.revealAnswerAnimationController)
+    animation = Tween(begin: 32.0, end: animationEndPadding).animate(widget.revealAnswerAnimationController)
       ..addListener(() {
         setState(() {
           // the state that has changed here is the animation object’s value
@@ -45,7 +47,8 @@ class QuestionState extends State<Question> with SingleTickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+
+    var questionContainer = Container(
         padding: EdgeInsets.only(bottom: animation.value),
         alignment: Alignment.center,
         child: Text(
@@ -57,6 +60,16 @@ class QuestionState extends State<Question> with SingleTickerProviderStateMixin 
           textAlign: TextAlign.center,
         )
     );
+
+
+    var cliprect = new ClipRect(
+      child: new BackdropFilter(
+        filter: new ui.ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
+        child: questionContainer,
+        ),
+      );
+
+    return cliprect;
   }
 }
 
@@ -85,17 +98,24 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
 
 
     Widget answer = Container(
-        padding:  EdgeInsets.only(top: 32.0),
+        padding:  EdgeInsets.only(top: 0.0),
         alignment: Alignment.topCenter,
         child: answerText
 
+    );
+
+    var cliprect = new ClipRect(
+      child: new BackdropFilter(
+        filter: new ui.ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
+        child: answer,
+      ),
     );
 
     var pageView = PageView(
         scrollDirection: Axis.vertical,
         children: [
           Container(),
-          answer
+          cliprect
         ]
     );
 
@@ -183,11 +203,8 @@ class ReviewerState extends State<Reviewer> {
           fit: BoxFit.cover,
           height: 800.0,
         ),
-        BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
-          child: Container(
-            color: Colors.white.withOpacity(0.5),
-          ),
+        Container(
+          color: Colors.white.withOpacity(0.40),
         ),
         PageView(
         children: [
