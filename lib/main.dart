@@ -240,6 +240,7 @@ class ReviewerState extends State<Reviewer> {
   var nextAnkiCard;
   PageController nextQuestionPageController;
   var _currentPage;
+  var _currentCardIndex;
 
   var ankiCards = [
     AnkiCard(
@@ -253,6 +254,26 @@ class ReviewerState extends State<Reviewer> {
     AnkiCard(
       "confident",
       "jǎu sêon sām 有信心",
+    ),
+    AnkiCard(
+      "broadcast / anounce",
+      "gwóng bô 廣播"
+    ),
+    AnkiCard(
+        "they have more confidence",
+        "kěoi dei sêon sām gōu dī 佢哋信心高啲"
+    ),
+    AnkiCard(
+        "medical insurance",
+        "jī lìu bóu hím 醫療保險"
+    ),
+    AnkiCard(
+        "I didn't do it on purpose / I didn't mean it",
+        "ngǒ m hai jǎu sām 我唔係有心"
+    ),
+    AnkiCard(
+      "have a good opinion / feeling toward sb.",
+        "dêoi jǎu hóu gám 對...有好感"
     )
   ];
 
@@ -260,10 +281,21 @@ class ReviewerState extends State<Reviewer> {
   void initState() {
     super.initState();
 
-    currentAnkiCard = ankiCards[0];
-    nextAnkiCard = ankiCards[1];
+    _currentCardIndex = -1;
+    _nextCard();
 
     nextQuestionPageController = new PageController(initialPage: 1);
+  }
+
+  void _nextCard() {
+    setState(() {
+      _currentCardIndex++;
+      if( _currentCardIndex == ankiCards.length - 1)
+        _currentCardIndex = 0;
+      currentAnkiCard = ankiCards[_currentCardIndex];
+      nextAnkiCard = ankiCards[_currentCardIndex + 1];
+      showingQuestion = true;
+    });
   }
 
   void _handleAnswerRevealed() {
@@ -275,11 +307,7 @@ class ReviewerState extends State<Reviewer> {
   void _handlePageChangeFinished() {
     if( _currentPage == 0 || _currentPage==2) {
       // move on to next card
-      setState(() {
-        currentAnkiCard = ankiCards[1];
-        nextAnkiCard = ankiCards[2];
-        showingQuestion = true;
-      });
+      _nextCard();
     }
   }
 
