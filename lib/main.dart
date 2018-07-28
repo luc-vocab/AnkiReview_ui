@@ -239,10 +239,29 @@ class ReviewerState extends State<Reviewer> {
   var currentAnkiCard;
   var nextAnkiCard;
   PageController nextQuestionPageController;
+  var _currentPage;
+
+  var ankiCards = [
+    AnkiCard(
+      "travel around the world",
+      "wàan jàu sâi gâai 環遊世界",
+    ),
+    AnkiCard(
+      "I have to work late",
+      "ngǒ jîu hóu cì sāu gūng 我要好遲收工",
+    ),
+    AnkiCard(
+      "confident",
+      "jǎu sêon sām 有信心",
+    )
+  ];
 
   @override
   void initState() {
     super.initState();
+
+    currentAnkiCard = ankiCards[0];
+    nextAnkiCard = ankiCards[1];
 
     nextQuestionPageController = new PageController(initialPage: 1);
   }
@@ -253,39 +272,55 @@ class ReviewerState extends State<Reviewer> {
     });
   }
 
+  void _handlePageChangeFinished() {
+    if( _currentPage == 0 || _currentPage==2) {
+      // move on to next card
+      setState(() {
+        currentAnkiCard = ankiCards[1];
+        nextAnkiCard = ankiCards[2];
+        showingQuestion = true;
+      });
+    }
+  }
+
+  void _handleOnPageChanged(int newValue) {
+    _currentPage = newValue;
+  }
+
   @override
   Widget build(BuildContext context) {
 
 
-    var ankiCard1 = AnkiCard(
-      "travel around the world",
-      "wàan jàu sâi gâai 環遊世界",
-    );
-    var ankiCard2 = AnkiCard(
-      "I have to work late",
-      "ngǒ jîu hóu cì sāu gūng 我要好遲收工",
-    );
-    var ankiCard3 = AnkiCard(
-      "confident",
-      "jǎu sêon sām 有信心",
-    );
 
-    currentAnkiCard = ankiCard1;
-    nextAnkiCard = ankiCard2;
 
     Widget child = Card(ankiCard: currentAnkiCard,
                         answerRevealed: _handleAnswerRevealed);
 
     if( !showingQuestion ) {
+
+
       // need to show a pageview with next question
-      child = PageView(
+      var pageView = PageView(
         children: [
           Card(ankiCard: nextAnkiCard),
           Card(ankiCard: currentAnkiCard, showAnswer: true),
           Card(ankiCard: nextAnkiCard),
         ],
         controller: nextQuestionPageController,
+        onPageChanged: _handleOnPageChanged,
       );
+
+      var scrollNotification = NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification notification) {
+          if (notification is ScrollEndNotification) {
+            _handlePageChangeFinished();
+          }
+        },
+        child: pageView,
+      );
+
+      child = scrollNotification;
+
     }
 
     return Stack(
