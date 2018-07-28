@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'dart:math';
+
+import 'ankireview.dart';
 // Uncomment lines 7 and 10 to view the visual layout at runtime.
 //import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
 
@@ -20,11 +22,12 @@ void main() {
  */
 
 class Question extends StatefulWidget {
-  Question({Key key,  this.questionString, this.textSize = 55.0, this.revealAnswerAnimationController}) : super(key: key);
+  Question({Key key,  this.questionString, this.textSize = 55.0, this.revealAnswerAnimationController, @required this.showAnswer}) : super(key: key);
 
   final String questionString;
   final double textSize;
   final AnimationController revealAnswerAnimationController;
+  final bool showAnswer;
 
   @override
   createState() => QuestionState();
@@ -48,8 +51,13 @@ class QuestionState extends State<Question> with SingleTickerProviderStateMixin 
   @override
   Widget build(BuildContext context) {
 
+    var bottomPadding = animation.value;
+    if(widget.showAnswer) {
+      bottomPadding = animationEndPadding;
+    }
+
     var questionContainer = Container(
-        padding: EdgeInsets.only(bottom: animation.value),
+        padding: EdgeInsets.only(bottom: bottomPadding ),
         alignment: Alignment.center,
         child: Text(
           widget.questionString,
@@ -74,17 +82,26 @@ class QuestionState extends State<Question> with SingleTickerProviderStateMixin 
 }
 
 class Answer extends StatefulWidget {
-  Answer({Key key, this.answerString, this.textSize = 55.0, this.revealAnswerAnimationController}) : super(key: key);
+  Answer({Key key,
+          @required this.answerString,
+          this.textSize = 55.0,
+          @required this.revealAnswerAnimationController,
+          @required this.answerRevealed,
+          this.showAnswer}) : super(key: key);
 
   final String answerString;
   final double textSize;
   final AnimationController revealAnswerAnimationController;
+  final Function answerRevealed;
+  final bool showAnswer;
 
   @override
   createState() => AnswerState();
 }
 
 class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
+  var _currentPage = 0;
+
   @override
   Widget build(BuildContext context) {
     var answerText = Text(
@@ -104,6 +121,8 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
 
     );
 
+    Widget child;
+
     var cliprect = new ClipRect(
       child: new BackdropFilter(
         filter: new ui.ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
@@ -111,21 +130,40 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
       ),
     );
 
-    var pageView = PageView(
+    if( ! widget.showAnswer ) {
+
+
+      var pageView = PageView(
         scrollDirection: Axis.vertical,
         children: [
           Container(),
           cliprect
-        ]
-    );
+        ],
+        onPageChanged: (pageNum) {
+          _currentPage = pageNum;
+        },
+      );
 
-    var scrollNotification = NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        var metrics = notification.metrics;
-        widget.revealAnswerAnimationController.value = metrics.extentBefore / metrics.viewportDimension.toDouble();
-      },
-      child: pageView,
-    );
+      var scrollNotification = NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification notification) {
+          if (notification is ScrollEndNotification) {
+            if (_currentPage == 1) {
+              // we have revealed the answer
+              widget.answerRevealed();
+            }
+          }
+          var metrics = notification.metrics;
+          widget.revealAnswerAnimationController.value =
+              metrics.extentBefore / metrics.viewportDimension.toDouble();
+        },
+        child: pageView,
+      );
+
+      child = scrollNotification;
+
+    } else {
+      child = cliprect;
+    }
 
     var card = Column(
         children: [
@@ -133,7 +171,7 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
               child: Container()
           ),
           Expanded(
-            child: scrollNotification,
+            child: child,
           )
         ]
     );
@@ -143,10 +181,11 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
 }
 
 class Card extends StatefulWidget {
-  Card({Key key, this.questionString, this.answerString}) : super(key: key);
+  Card({Key key, @required this.ankiCard, @required this.answerRevealed, this.showAnswer = false}) : super(key: key);
 
-  final String questionString;
-  final String answerString;
+  final AnkiCard ankiCard;
+  final Function answerRevealed;
+  final bool showAnswer;
 
   @override
   createState() => CardState();
@@ -166,14 +205,17 @@ class CardState extends State<Card> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
 
     var stackBottom = Question(
-        questionString: widget.questionString,
+        questionString: widget.ankiCard.questionString,
         revealAnswerAnimationController: revealAnswerAnimationController,
         textSize: _fontSize,
+        showAnswer: widget.showAnswer,
     );
     var stackTop = Answer(
-        answerString: widget.answerString,
+        answerString: widget.ankiCard.answerString,
         revealAnswerAnimationController: revealAnswerAnimationController,
         textSize: _fontSize,
+        answerRevealed: widget.answerRevealed,
+        showAnswer: widget.showAnswer,
     );
 
     return Stack(
@@ -193,9 +235,59 @@ class Reviewer extends StatefulWidget {
 }
 
 class ReviewerState extends State<Reviewer> {
+  var showingQuestion = true;
+  var currentAnkiCard;
+  var nextAnkiCard;
+  PageController nextQuestionPageController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    nextQuestionPageController = new PageController(initialPage: 1);
+  }
+
+  void _handleAnswerRevealed() {
+    setState(() {
+      showingQuestion = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+
+
+    var ankiCard1 = AnkiCard(
+      "travel around the world",
+      "wàan jàu sâi gâai 環遊世界",
+    );
+    var ankiCard2 = AnkiCard(
+      "I have to work late",
+      "ngǒ jîu hóu cì sāu gūng 我要好遲收工",
+    );
+    var ankiCard3 = AnkiCard(
+      "confident",
+      "jǎu sêon sām 有信心",
+    );
+
+    currentAnkiCard = ankiCard1;
+    nextAnkiCard = ankiCard2;
+
+    Widget child = Card(ankiCard: currentAnkiCard,
+                        answerRevealed: _handleAnswerRevealed);
+
+    if( !showingQuestion ) {
+      // need to show a pageview with next question
+      child = PageView(
+        children: [
+          Card(ankiCard: nextAnkiCard),
+          Card(ankiCard: currentAnkiCard, showAnswer: true),
+          Card(ankiCard: nextAnkiCard),
+        ],
+        controller: nextQuestionPageController,
+      );
+    }
+
     return Stack(
       children: [
         Image.asset(
@@ -204,24 +296,9 @@ class ReviewerState extends State<Reviewer> {
           height: 800.0,
         ),
         Container(
-          color: Colors.white.withOpacity(0.40),
+          color: Colors.white.withOpacity(0.50),
         ),
-        PageView(
-        children: [
-          Card(
-            questionString: "travel around the world",
-            answerString: "wàan jàu sâi gâai 環遊世界",
-          ),
-          Card(
-            questionString: "I have to work late",
-            answerString: "ngǒ jîu hóu cì sāu gūng 我要好遲收工",
-          ),
-          Card(
-            questionString: "confident",
-            answerString: "jǎu sêon sām 有信心",
-          )
-        ]
-        )
+        child,
       ]
     );
   }
