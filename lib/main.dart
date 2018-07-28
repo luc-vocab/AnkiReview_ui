@@ -94,6 +94,7 @@ class Answer extends StatefulWidget {
   final AnimationController revealAnswerAnimationController;
   final Function answerRevealed;
   final bool showAnswer;
+  bool _answerAlreadyRevealed = false;
 
   @override
   createState() => AnswerState();
@@ -149,7 +150,10 @@ class AnswerState extends State<Answer> with SingleTickerProviderStateMixin {
           if (notification is ScrollEndNotification) {
             if (_currentPage == 1) {
               // we have revealed the answer
-              widget.answerRevealed();
+              if(! widget._answerAlreadyRevealed) {
+                widget._answerAlreadyRevealed = true;
+                widget.answerRevealed();
+              }
             }
           }
           var metrics = notification.metrics;
@@ -288,6 +292,7 @@ class ReviewerState extends State<Reviewer> {
   }
 
   void _nextCard() {
+    print("nextCard");
     setState(() {
       _currentCardIndex++;
       if( _currentCardIndex == ankiCards.length - 1)
@@ -326,6 +331,7 @@ class ReviewerState extends State<Reviewer> {
 
     if( !showingQuestion ) {
 
+      _currentPage = 1;
 
       // need to show a pageview with next question
       var pageView = PageView(
